@@ -7,7 +7,7 @@ import 'package:dartorrent_common/dartorrent_common.dart';
 import 'package:torrent_task/torrent_task.dart';
 
 void main() async {
-  ServerSocket serverSocket;
+  ServerSocket? serverSocket;
   int serverPort;
   var infoBuffer = randomBytes(20);
   var piecesNum = 20;
@@ -140,7 +140,7 @@ void main() async {
   var pid = generatePeerId();
   var peer = Peer.newTCPPeer(
       pid,
-      CompactAddress(InternetAddress.tryParse('127.0.0.1'), serverPort),
+      CompactAddress(InternetAddress.tryParse('127.0.0.1')!, serverPort),
       infoBuffer,
       piecesNum,
       null);

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:torrent_model/torrent_model.dart';
 import 'package:dartorrent_common/dartorrent_common.dart';
@@ -25,8 +26,8 @@ const MAX_UPLOADED_NOTIFY_SIZE = 1024 * 1024 * 10; // 10 mb
 /// - 没有处理对外的Suggest Piece/Fast Allow
 class PeersManager with Holepunch, PEX {
   final List<InternetAddress> IGNORE_IPS = [
-    InternetAddress.tryParse('0.0.0.0'),
-    InternetAddress.tryParse('127.0.0.1')
+    InternetAddress.tryParse('0.0.0.0')!,
+    InternetAddress.tryParse('127.0.0.1')!
   ];
 
   bool _disposed = false;
@@ -39,7 +40,7 @@ class PeersManager with Holepunch, PEX {
 
   final Set<InternetAddress> _incomingAddress = {};
 
-  InternetAddress localExtenelIP;
+  InternetAddress? localExtenelIP;
 
   /// 写入磁盘的缓存最大值
   int maxWriteBufferSize;
@@ -56,9 +57,9 @@ class PeersManager with Holepunch, PEX {
 
   int _downloaded = 0;
 
-  int _startedTime;
+  int? _startedTime;
 
-  int _endTime;
+  int? _endTime;
 
   int _uploadedNotifySize = 0;
 
@@ -72,7 +73,7 @@ class PeersManager with Holepunch, PEX {
 
   bool _paused = false;
 
-  Timer _keepAliveTimer;
+  Timer? _keepAliveTimer;
 
   final List _pausedRequest = [];
 
@@ -128,9 +129,9 @@ class PeersManager with Holepunch, PEX {
   /// the end time is when manager was disposed.
   int get liveTime {
     if (_startedTime == null) return 0;
-    var passed = DateTime.now().millisecondsSinceEpoch - _startedTime;
+    var passed = DateTime.now().millisecondsSinceEpoch - _startedTime!;
     if (_endTime != null) {
-      passed = _endTime - _startedTime;
+      passed = _endTime! - _startedTime!;
     }
     return passed;
   }
@@ -252,7 +253,7 @@ class PeersManager with Holepunch, PEX {
   /// Usually [socket] is null , unless this peer was incoming connection, but
   /// this type peer was managed by [TorrentTask] , user don't need to know that.
   void addNewPeerAddress(CompactAddress address,
-      [PeerType type = PeerType.TCP, Socket socket]) {
+      [PeerType type = PeerType.TCP, Socket? socket]) {
     if (address == null) return;
     if (address.address == localExtenelIP) return;
     if (socket != null) {
@@ -262,14 +263,14 @@ class PeersManager with Holepunch, PEX {
       }
     }
     if (_peersAddress.add(address)) {
-      Peer peer;
+      Peer? peer;
       if (type == PeerType.TCP) {
-        peer = Peer.newTCPPeer(_localPeerId, address, _metaInfo.infoHashBuffer,
-            _metaInfo.pieces.length, socket);
+        peer = Peer.newTCPPeer(_localPeerId, address, _metaInfo.infoHashBuffer!,
+            _metaInfo.pieces.length, socket!);
       }
       if (type == PeerType.UTP) {
-        peer = Peer.newUTPPeer(_localPeerId, address, _metaInfo.infoHashBuffer,
-            _metaInfo.pieces.length, socket);
+        peer = Peer.newUTPPeer(_localPeerId, address, _metaInfo.infoHashBuffer!,
+            _metaInfo.pieces.length, socket!);
       }
       if (peer != null) _hookPeer(peer);
     }
@@ -299,7 +300,7 @@ class PeersManager with Holepunch, PEX {
   Future _flushFiles(final Set<int> indices) async {
     if (indices.isEmpty) return;
     var piecesSize = _metaInfo.pieceLength;
-    var _buffer = indices.length * piecesSize;
+    var _buffer = indices.length * piecesSize!;
     if (_buffer >= maxWriteBufferSize || _fileManager.isAllComplete) {
       var temp = Set<int>.from(indices);
       indices.clear();
@@ -359,7 +360,7 @@ class PeersManager with Holepunch, PEX {
     var peer = source as Peer;
     var piece = _pieceProvider[index];
     if (piece != null && piece.haveAvalidateSubPiece()) {
-      piece.addAvalidatePeer(peer.id);
+      piece.addAvalidatePeer(peer.id!);
       _pieceManager.processDownloadingPiece(index);
       _requestPieces(source, index);
     }
@@ -400,7 +401,7 @@ class PeersManager with Holepunch, PEX {
 
     var completedPieces = peer.remoteCompletePieces;
     completedPieces.forEach((index) {
-      _pieceProvider[index]?.removeAvalidatePeer(peer.id);
+      _pieceProvider[index]?.removeAvalidatePeer(peer.id!);
     });
     _pausedRemoteRequest.remove(peer.id);
     var tempIndex = [];
@@ -446,26 +447,26 @@ class PeersManager with Holepunch, PEX {
     }
     var peer = source as Peer;
 
-    Piece piece;
+    Piece? piece;
     if (pieceIndex != -1) {
       piece = _pieceProvider[pieceIndex];
       if (!piece.haveAvalidateSubPiece()) {
-        piece = _pieceManager.selectPiece(peer.id, peer.remoteCompletePieces,
+        piece = _pieceManager.selectPiece(peer.id!, peer.remoteCompletePieces,
             _pieceProvider, peer.remoteSuggestPieces);
       }
     } else {
-      piece = _pieceManager.selectPiece(peer.id, peer.remoteCompletePieces,
+      piece = _pieceManager.selectPiece(peer.id!, peer.remoteCompletePieces,
           _pieceProvider, peer.remoteSuggestPieces);
     }
     if (piece == null) return;
 
     var subIndex = piece.popSubPiece();
     var size = DEFAULT_REQUEST_LENGTH; // block大小现算
-    var begin = subIndex * size;
-    if ((begin + size) > piece.byteLength) {
-      size = piece.byteLength - begin;
+    var begin = subIndex! * size;
+    if ((begin + size) > piece.byteLength!) {
+      size = piece.byteLength! - begin;
     }
-    if (!peer.sendRequest(piece.index, begin, size)) {
+    if (!peer.sendRequest(piece.index!, begin, size)) {
       piece.pushSubPiece(subIndex);
     } else {
       Timer.run(() => _requestPieces(peer, pieceIndex));
@@ -495,9 +496,9 @@ class PeersManager with Holepunch, PEX {
   void _processRemoteRequest(dynamic source, int index, int begin, int length) {
     if (isPaused) {
       var peer = source as Peer;
-      _pausedRemoteRequest[peer.id] ??= [];
+      _pausedRemoteRequest[peer.id!] ??= [];
       var pausedRequest = _pausedRemoteRequest[peer.id];
-      pausedRequest.add([source, index, begin, length]);
+      pausedRequest!.add([source, index, begin, length]);
       return;
     }
     var peer = source as Peer;
@@ -514,7 +515,7 @@ class PeersManager with Holepunch, PEX {
     _processBitfieldUpdate(source, null);
   }
 
-  void _processBitfieldUpdate(dynamic source, Bitfield bitfield) {
+  void _processBitfieldUpdate(dynamic source, Bitfield? bitfield) {
     var peer = source as Peer;
     if (bitfield != null) {
       if (peer.interestedRemote) return;
@@ -545,7 +546,7 @@ class PeersManager with Holepunch, PEX {
           peer.sendInterested(true);
         } else {
           flag = true;
-          _pieceProvider[index]?.addAvalidatePeer(peer.id);
+          _pieceProvider[index]?.addAvalidatePeer(peer.id!);
         }
       }
     });
@@ -558,14 +559,14 @@ class PeersManager with Holepunch, PEX {
     if (!choke) {
       var completedPieces = peer.remoteCompletePieces;
       completedPieces.forEach((index) {
-        _pieceProvider[index]?.addAvalidatePeer(peer.id);
+        _pieceProvider[index]?.addAvalidatePeer(peer.id!);
       });
       // 这里开始通知request;
       Timer.run(() => _requestPieces(peer));
     } else {
       var completedPieces = peer.remoteCompletePieces;
       completedPieces.forEach((index) {
-        _pieceProvider[index]?.removeAvalidatePeer(peer.id);
+        _pieceProvider[index]?.removeAvalidatePeer(peer.id!);
       });
     }
   }
@@ -710,7 +711,7 @@ class PeersManager with Holepunch, PEX {
         options['reachable'] == null) {
       var peer = source as Peer;
       var message = getRendezvousMessage(address);
-      peer.sendExtendMessage('ut_holepunch', message);
+      peer.sendExtendMessage('ut_holepunch', message as Uint8List);
       return;
     }
     addNewPeerAddress(address);

@@ -12,8 +12,8 @@ void main() async {
     var model = await Torrent.parse(torrentFile);
     // model.announces.clear();
     var task = TorrentTask.newTask(model, savePath);
-    Timer timer;
-    Timer timer1;
+    Timer? timer;
+    Timer? timer1;
     var startTime = DateTime.now().millisecondsSinceEpoch;
     task.onTaskComplete(() {
       print(
@@ -30,7 +30,7 @@ void main() async {
     // ignore: unawaited_futures
     findPublicTrackers().listen((alist) {
       alist.forEach((element) {
-        task.startAnnounceUrl(element, model.infoHashBuffer);
+        task.startAnnounceUrl(element, model.infoHashBuffer!);
       });
     });
 

@@ -63,7 +63,7 @@ class PieceManager implements PieceProvider {
     }
   }
 
-  Piece selectPiece(String remotePeerId, List<int> remoteHavePieces,
+  Piece? selectPiece(String remotePeerId, List<int> remoteHavePieces,
       PieceProvider provider, final Set<int> suggestPieces) {
     // 查看当前下载piece中是否可以使用该peer
     var avalidatePiece = <int>[];
@@ -72,7 +72,7 @@ class PieceManager implements PieceProvider {
       for (var i = 0; i < suggestPieces.length; i++) {
         var p = _pieces[suggestPieces.elementAt(i)];
         if (p != null && p.haveAvalidateSubPiece()) {
-          processDownloadingPiece(p.index);
+          processDownloadingPiece(p.index!);
           return p;
         }
       }
@@ -82,7 +82,7 @@ class PieceManager implements PieceProvider {
       var p = _pieces[_donwloadingPieces.elementAt(i)];
       if (p == null) continue;
       if (p.containsAvalidatePeer(remotePeerId) && p.haveAvalidateSubPiece()) {
-        avalidatePiece.add(p.index);
+        avalidatePiece.add(p.index!);
       }
     }
 
@@ -94,7 +94,7 @@ class PieceManager implements PieceProvider {
         remotePeerId, candidatePieces, this, _isFirst);
     _isFirst = false;
     if (piece == null) return null;
-    processDownloadingPiece(piece.index);
+    processDownloadingPiece(piece.index!);
     return piece;
   }
 
@@ -134,7 +134,7 @@ class PieceManager implements PieceProvider {
 
   @override
   Piece operator [](index) {
-    return _pieces[index];
+    return _pieces[index]!;
   }
 
   // @override

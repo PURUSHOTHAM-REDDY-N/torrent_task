@@ -20,8 +20,8 @@ mixin Holepunch {
     'NoSelf	The target endpoint belongs to the relaying peer.'
   ];
 
-  List<int> getRendezvousMessage(CompactAddress address) {
-    List<int> message;
+  List<int>? getRendezvousMessage(CompactAddress address) {
+    List<int>? message;
     if (address.address.type == InternetAddressType.IPv4) {
       message = List<int>.filled(12, 0);
       List.copyRange(message, 2, address.toBytes());
@@ -46,13 +46,13 @@ mixin Holepunch {
     var type = data[0];
     var iptype = data[1];
     var offset = 0;
-    CompactAddress ip;
+    CompactAddress? ip;
     try {
       if (iptype == 0) {
-        ip = CompactAddress.parseIPv4Address(data, 2);
+        ip = CompactAddress.parseIPv4Address(data, 2)!;
         offset = 8;
       } else {
-        ip = CompactAddress.parseIPv6Address(data, 2);
+        ip = CompactAddress.parseIPv6Address(data, 2)!;
         offset = 20;
       }
     } catch (e) {
@@ -77,17 +77,17 @@ mixin Holepunch {
       if (err >= 0) {
         errMsg = ERROR_MSG[err];
       }
-      Timer.run(() => holePunchError(errMsg, ip));
+      Timer.run(() => holePunchError(errMsg, ip!));
       return;
     }
 
     if (type == 0x00) {
-      Timer.run(() => holePunchRendezvous(ip));
+      Timer.run(() => holePunchRendezvous(ip!));
       return;
     }
 
     if (type == 0x01) {
-      Timer.run(() => holePunchConnect(ip));
+      Timer.run(() => holePunchConnect(ip!));
       return;
     }
   }

@@ -21,27 +21,27 @@ class LSD {
 
   bool get isClosed => _closed;
 
-  RawDatagramSocket _socket;
+  RawDatagramSocket? _socket;
 
-  final String _infoHashHex;
+  final String? _infoHashHex;
 
-  int port;
+  int? port;
 
-  final String _peerId;
+  final String? _peerId;
 
   final Set<Function(CompactAddress address, String infoHashHex)>
       _peerHandlers = <Function(CompactAddress, String)>{};
 
   LSD(this._infoHashHex, this._peerId);
 
-  Timer _timer;
+  Timer? _timer;
 
   void start() async {
     _socket ??= await RawDatagramSocket.bind(InternetAddress.anyIPv4, LSD_PORT);
-    _socket.listen((event) {
+    _socket!.listen((event) {
       if (event == RawSocketEvent.read) {
-        var datagram = _socket.receive();
-        var datas = datagram.data;
+        var datagram = _socket!.receive();
+        var datas = datagram!.data;
         var str = String.fromCharCodes(datas);
         _processReceive(str, datagram.address);
       }
@@ -89,17 +89,17 @@ class LSD {
     }
   }
 
-  void _announce() async {
+  Future _announce() async {
     _timer?.cancel();
     var message = _createMessage();
     await _sendMessage(message);
     _timer = Timer(Duration(seconds: 5 * 60), () => _announce());
   }
 
-  Future _sendMessage(String message, [Completer completer]) {
+  Future? _sendMessage(String message, [Completer? completer]) {
     if (_socket == null) return null;
     completer ??= Completer();
-    var success = _socket.send(message.codeUnits, LSD_HOST, LSD_PORT) > 0;
+    var success = _socket!.send(message.codeUnits, LSD_HOST, LSD_PORT) > 0;
     if (!success) {
       Timer.run(() => _sendMessage(message, completer));
     } else {

@@ -11,7 +11,7 @@ import 'package:torrent_task/torrent_task.dart';
 
 void main() {
   group('Bitfield test - ', () {
-    Bitfield bitfield;
+    Bitfield? bitfield;
     var pieces = 123; // 不要给8的倍数
     setUp(() {
       bitfield = Bitfield.createEmptyBitfield(pieces);
@@ -21,8 +21,8 @@ void main() {
       var c = pieces ~/ 8;
       if (c * 8 != pieces) c++;
       print('check buffer length');
-      assert(bitfield.buffer.length == c);
-      bitfield.buffer.forEach((element) {
+      assert(bitfield!.buffer.length == c);
+      bitfield!.buffer.forEach((element) {
         assert(element == 0);
       });
     });
@@ -33,38 +33,38 @@ void main() {
       for (var i = 0; i < pieces; i++) {
         var index = t.nextInt(pieces * 2);
         if (index >= pieces) {
-          bitfield.setBit(index, true);
-          assert(bitfield.getBit(index) == false);
-          bitfield.setBit(index, false);
-          assert(bitfield.getBit(index) == false);
+          bitfield!.setBit(index, true);
+          assert(bitfield!.getBit(index) == false);
+          bitfield!.setBit(index, false);
+          assert(bitfield!.getBit(index) == false);
         } else {
           randomIndex.add(index);
-          bitfield.setBit(index, true);
-          assert(bitfield.getBit(index) == true);
+          bitfield!.setBit(index, true);
+          assert(bitfield!.getBit(index) == true);
         }
       }
       var indexList = randomIndex.toList();
       indexList.sort((a, b) => a - b);
 
-      var list = bitfield.completedPieces;
+      var list = bitfield!.completedPieces;
       print('Check completed index list...');
       for (var i = 0; i < list.length; i++) {
         indexList.remove(list[i]);
       }
       assert(indexList.isEmpty);
 
-      assert(bitfield.haveCompletePiece());
+      assert(bitfield!.haveCompletePiece());
       print('Check bitfield value...');
       list.forEach((index) {
-        assert(bitfield.getBit(index));
+        assert(bitfield!.getBit(index));
       });
       var tempList = [];
       tempList.addAll(list);
       tempList.forEach((index) {
-        bitfield.setBit(index, false);
+        bitfield!.setBit(index, false);
       });
       print('Clean all bitfield...');
-      bitfield.buffer.forEach((element) {
+      bitfield!.buffer.forEach((element) {
         assert(element == 0);
       });
     });
@@ -75,27 +75,27 @@ void main() {
       for (var i = 0; i < pieces; i++) {
         var index = t.nextInt(pieces * 2);
         if (index >= pieces) {
-          bitfield.setBit(index, true);
-          assert(bitfield.getBit(index) == false);
-          bitfield.setBit(index, false);
-          assert(bitfield.getBit(index) == false);
+          bitfield!.setBit(index, true);
+          assert(bitfield!.getBit(index) == false);
+          bitfield!.setBit(index, false);
+          assert(bitfield!.getBit(index) == false);
         } else {
           randomIndex.add(index);
-          bitfield.setBit(index, true);
-          assert(bitfield.getBit(index) == true);
+          bitfield!.setBit(index, true);
+          assert(bitfield!.getBit(index) == true);
         }
       }
 
-      bitfield.completedPieces;
-      bitfield.setBit(t.nextInt(pieces * 2), true);
-      var length = bitfield.completedPieces.length;
-      bitfield.setBit(bitfield.completedPieces.last, true);
-      assert(length == bitfield.completedPieces.length);
-      bitfield.setBit(bitfield.completedPieces.first, true);
-      assert(length == bitfield.completedPieces.length);
-      var first = bitfield.completedPieces.first;
-      bitfield.setBit(bitfield.completedPieces.first, false);
-      assert(!bitfield.completedPieces.contains(first));
+      bitfield!.completedPieces;
+      bitfield!.setBit(t.nextInt(pieces * 2), true);
+      var length = bitfield!.completedPieces.length;
+      bitfield!.setBit(bitfield!.completedPieces.last, true);
+      assert(length == bitfield!.completedPieces.length);
+      bitfield!.setBit(bitfield!.completedPieces.first, true);
+      assert(length == bitfield!.completedPieces.length);
+      var first = bitfield!.completedPieces.first;
+      bitfield!.setBit(bitfield!.completedPieces.first, false);
+      assert(!bitfield!.completedPieces.contains(first));
     });
   });
 
@@ -109,9 +109,9 @@ void main() {
       var size = DEFAULT_REQUEST_LENGTH;
       var subIndex = await p.popSubPiece();
       subIndex = p.popLastSubPiece();
-      var begin = subIndex * size;
-      if ((begin + size) > p.byteLength) {
-        size = p.byteLength - begin;
+      var begin = subIndex! * size;
+      if ((begin + size) > p.byteLength!) {
+        size = p.byteLength! - begin;
         assert(remain == size);
       }
     });
@@ -128,7 +128,7 @@ void main() {
 
   group('test same piece find - ', () {
     var pieces = 123; // 不要给8的倍数
-    var bitfieldList = List<Bitfield>(10);
+    var bitfieldList = List<Bitfield?>.filled(10,null);
     // 模拟多个peer的bitfield：
     setUp(() {
       for (var i = 0; i < bitfieldList.length; i++) {
@@ -141,14 +141,14 @@ void main() {
         for (var i = 0; i < pieces; i++) {
           var index = t.nextInt(pieces);
           if (index >= pieces) {
-            bitfield.setBit(index, true);
-            assert(bitfield.getBit(index) == false);
+            bitfield!.setBit(index, true);
+            assert(bitfield!.getBit(index) == false);
             bitfield.setBit(index, false);
             assert(bitfield.getBit(index) == false);
           } else {
             randomIndex.add(index);
-            bitfield.setBit(index, true);
-            assert(bitfield.getBit(index) == true);
+            bitfield!.setBit(index, true);
+            assert(bitfield!.getBit(index) == true);
           }
         }
       });
@@ -162,27 +162,27 @@ void main() {
   group('StateFile Test - ', () {
     var directory = 'test';
     // var torrent = await Torrent.parse('$directory/sample3.torrent');
-    Torrent torrent;
+    Torrent? torrent;
     setUpAll(() async {
       torrent = await Torrent.parse('$directory/test4.torrent');
-      var f = File('$directory/${torrent.infoHash}.bt.state');
+      var f = File('$directory/${torrent!.infoHash}.bt.state');
       if (await f.exists()) await f.delete();
     });
     test('Write/Read StateFile', () async {
-      var stateFile = await StateFile.getStateFile(directory, torrent);
-      var b = torrent.pieces.length ~/ 8;
-      if (b * 8 != torrent.pieces.length) b++;
+      var stateFile = await StateFile.getStateFile(directory, torrent!);
+      var b = torrent!.pieces.length ~/ 8;
+      if (b * 8 != torrent!.pieces.length) b++;
       assert(stateFile.bitfield.length == b);
-      assert(stateFile.bitfield.piecesNum == torrent.pieces.length);
+      assert(stateFile.bitfield.piecesNum == torrent!.pieces.length);
       assert(!stateFile.bitfield.haveCompletePiece());
 
       await stateFile.close();
       // 测试建立空文件后读取内容
-      stateFile = await StateFile.getStateFile(directory, torrent);
-      b = torrent.pieces.length ~/ 8;
-      if (b * 8 != torrent.pieces.length) b++;
+      stateFile = await StateFile.getStateFile(directory, torrent!);
+      b = torrent!.pieces.length ~/ 8;
+      if (b * 8 != torrent!.pieces.length) b++;
       assert(stateFile.bitfield.length == b);
-      assert(stateFile.bitfield.piecesNum == torrent.pieces.length);
+      assert(stateFile.bitfield.piecesNum == torrent!.pieces.length);
       assert(!stateFile.bitfield.haveCompletePiece());
       assert(stateFile.downloaded == 0);
       assert(stateFile.uploaded == 0);
@@ -204,7 +204,7 @@ void main() {
 
       await stateFile.close();
       await stateFile.close(); //关闭两次会怎样？
-      var f = File('$directory/${torrent.infoHash}.bt.state');
+      var f = File('$directory/${torrent!.infoHash}.bt.state');
       var locker = Completer();
       var data = <int>[];
       f.openRead().listen((event) {
@@ -223,12 +223,12 @@ void main() {
       }, onError: (e) => locker.complete());
       await locker.future;
 
-      stateFile = await StateFile.getStateFile(directory, torrent);
-      b = torrent.pieces.length ~/ 8;
-      if (b * 8 != torrent.pieces.length) b++;
+      stateFile = await StateFile.getStateFile(directory, torrent!);
+      b = torrent!.pieces.length ~/ 8;
+      if (b * 8 != torrent!.pieces.length) b++;
       assert(stateFile.bitfield.length == b);
-      var sd = stateFile.bitfield.completedPieces.length * torrent.pieceLength;
-      sd = sd - (torrent.pieceLength - torrent.lastPriceLength);
+      var sd = stateFile.bitfield.completedPieces.length * torrent!.pieceLength!;
+      sd = sd - (torrent!.pieceLength! - torrent!.lastPriceLength!);
       assert(stateFile.downloaded == sd);
       print('download: $sd');
       assert(stateFile.uploaded == 987654321);
@@ -239,8 +239,8 @@ void main() {
     });
 
     test('Delete StateFile', () async {
-      var stateFile = await StateFile.getStateFile(directory, torrent);
-      var t = File('$directory/${torrent.infoHash}.bt.state');
+      var stateFile = await StateFile.getStateFile(directory, torrent!);
+      var t = File('$directory/${torrent!.infoHash}.bt.state');
       assert(await t.exists());
       await stateFile.delete();
       await stateFile.delete(); //删除两次

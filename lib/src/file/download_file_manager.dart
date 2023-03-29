@@ -18,9 +18,9 @@ class DownloadFileManager {
 
   final Set<DownloadFile> _files = {};
 
-  List<List<DownloadFile>> _piece2fileMap;
+  List<List<DownloadFile>?>? _piece2fileMap;
 
-  final Map<String, List<int>> _file2pieceMap = {};
+  final Map<String, List<int>?> _file2pieceMap = {};
 
   final List<SubPieceCompleteHandle> _subPieceCompleteHandles = [];
 
@@ -35,7 +35,7 @@ class DownloadFileManager {
   /// TODO
   /// - 没有建立文件读取缓存
   DownloadFileManager(this.metainfo, this._stateFile) {
-    _piece2fileMap = List(_stateFile.bitfield.piecesNum);
+    _piece2fileMap = List.filled(_stateFile.bitfield.piecesNum,null);
   }
 
   static Future<DownloadFileManager> createFileManager(
@@ -97,7 +97,7 @@ class DownloadFileManager {
     });
   }
 
-  int get downloaded => _stateFile?.downloaded;
+  int get downloaded => _stateFile!.downloaded;
 
   /// 该方法看似只将缓冲区内容写入磁盘，实际上
   /// 每当缓存写入后都会认为该[pieceIndex]对应`Piece`已经完成，则会去移除
@@ -107,7 +107,7 @@ class DownloadFileManager {
     var flushed = <String>{};
     for (var i = 0; i < pieceIndices.length; i++) {
       var pieceIndex = pieceIndices.elementAt(i);
-      var fs = _piece2fileMap[pieceIndex];
+      var fs = _piece2fileMap![pieceIndex];
       if (fs == null || fs.isEmpty) continue;
       for (var i = 0; i < fs.length; i++) {
         var file = fs[i];
@@ -125,7 +125,7 @@ class DownloadFileManager {
     }
 
     var msg =
-        '已下载：${d / (1024 * 1024)} mb , 完成度 ${((d / metainfo.length) * 10000).toInt() / 100} %';
+        '已下载：${d / (1024 * 1024)} mb , 完成度 ${((d / metainfo.length!.toInt()) * 10000).toInt() / 100} %';
     log(msg, name: runtimeType.toString());
     return true;
   }
@@ -151,19 +151,19 @@ class DownloadFileManager {
       _files.add(df);
       var fs = df.start;
       var fe = df.end;
-      var startPiece = fs ~/ metainfo.pieceLength;
-      var endPiece = fe ~/ metainfo.pieceLength;
+      var startPiece = fs ~/ metainfo.pieceLength!;
+      var endPiece = fe ~/ metainfo.pieceLength!;
       var pieces = _file2pieceMap[df.filePath];
       if (pieces == null) {
         pieces = <int>[];
         _file2pieceMap[df.filePath] = pieces;
       }
-      if (fe.remainder(metainfo.pieceLength) == 0) endPiece--;
+      if (fe.remainder(metainfo.pieceLength!) == 0) endPiece--;
       for (var pieceIndex = startPiece; pieceIndex <= endPiece; pieceIndex++) {
-        var l = _piece2fileMap[pieceIndex];
+        var l = _piece2fileMap![pieceIndex];
         if (l == null) {
           l = <DownloadFile>[];
-          _piece2fileMap[pieceIndex] = l;
+          _piece2fileMap![pieceIndex] = l;
           if (!localHave(pieceIndex)) pieces.add(pieceIndex);
         }
         l.add(df);
@@ -196,8 +196,8 @@ class DownloadFileManager {
   }
 
   void readFile(int pieceIndex, int begin, int length) {
-    var tempFiles = _piece2fileMap[pieceIndex];
-    var ps = pieceIndex * metainfo.pieceLength + begin;
+    var tempFiles = _piece2fileMap![pieceIndex];
+    var ps = pieceIndex * metainfo.pieceLength! + begin;
     var pe = ps + length;
     if (tempFiles == null || tempFiles.isEmpty) return;
     var futures = <Future>[];
@@ -224,8 +224,8 @@ class DownloadFileManager {
   /// 该`Sub Piece`是来自于[pieceIndex]对应的`Piece`，内容为[block],起始位置是[begin]。
   /// 该类不会去验证写入的Sub Piece是否重复，重复内容直接覆盖之前内容
   void writeFile(int pieceIndex, int begin, List<int> block) {
-    var tempFiles = _piece2fileMap[pieceIndex];
-    var ps = pieceIndex * metainfo.pieceLength + begin;
+    var tempFiles = _piece2fileMap![pieceIndex];
+    var ps = pieceIndex * metainfo.pieceLength! + begin;
     var blockSize = block.length;
     var pe = ps + blockSize;
     if (tempFiles == null || tempFiles.isEmpty) return;
@@ -251,7 +251,7 @@ class DownloadFileManager {
     return;
   }
 
-  Map _mapDownloadFilePosition(
+  Map? _mapDownloadFilePosition(
       int pieceStart, int pieceEnd, int length, DownloadFile tempFile) {
     var fs = tempFile.start;
     var fe = fs + tempFile.length;

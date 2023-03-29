@@ -84,7 +84,7 @@ abstract class Peer
   /// 单位:秒
   int countdownTime = 150;
 
-  String get id {
+  String? get id {
     return address?.toContactEncodingString();
   }
 
@@ -92,13 +92,13 @@ abstract class Peer
   final int _piecesNum;
 
   /// 远程的Bitfield
-  Bitfield _remoteBitfield;
+  late Bitfield _remoteBitfield;
 
   /// 该peer是否已经disposed
   bool _disposed = false;
 
   /// 倒计时关闭Timer
-  Timer _countdownTimer;
+  Timer? _countdownTimer;
 
   /// 对方是否choke了我，初始默认true
   bool _chokeMe = true;
@@ -125,7 +125,7 @@ abstract class Peer
   /// Local Peer Id
   final String _localPeerId; // 本机的peer id。发送消息会用到
 
-  String _remotePeerId;
+  String? _remotePeerId;
 
   /// has this peer send handshake message already?
   bool _handShaked = false;
@@ -134,7 +134,7 @@ abstract class Peer
   bool _bitfieldSended = false;
 
   /// 远程数据接受，监听subcription
-  StreamSubscription _streamChunk;
+  StreamSubscription? _streamChunk;
 
   /// 从通道中获取数据的buffer
   List<int> _cacheBuffer = [];
@@ -169,7 +169,7 @@ abstract class Peer
 
   int reqq;
 
-  int remoteReqq;
+  int? remoteReqq;
 
   ///
   /// [_id] 是用于区分不同Peer的Id，和[_localPeerId]不同，[_localPeerId]是bt协议中的Peer_id。
@@ -186,7 +186,7 @@ abstract class Peer
   }
 
   factory Peer.newTCPPeer(String localPeerId, CompactAddress address,
-      List<int> infoHashBuffer, int piecesNum, Socket socket,
+      List<int> infoHashBuffer, int piecesNum, Socket? socket,
       {bool enableExtend = true, bool enableFast = true}) {
     return _TCPPeer(localPeerId, address, infoHashBuffer, piecesNum, socket,
         enableExtend: enableExtend, enableFast: enableFast);
@@ -195,7 +195,7 @@ abstract class Peer
   factory Peer.newUTPPeer(String localPeerId, CompactAddress address,
       List<int> infoHashBuffer, int piecesNum, Socket socket,
       {bool enableExtend = true, bool enableFast = true}) {
-    return _UTPPeer(localPeerId, address, infoHashBuffer, piecesNum, socket,
+    return _UTPPeer(localPeerId, address, infoHashBuffer, piecesNum, socket as UTPSocket,
         enableExtend: enableExtend, enableFast: enableFast);
   }
 
@@ -214,7 +214,7 @@ abstract class Peer
     return false;
   }
 
-  String get remotePeerId => _remotePeerId;
+  String get remotePeerId => _remotePeerId!;
 
   String get localPeerId => _localPeerId;
 
@@ -296,7 +296,7 @@ abstract class Peer
     remoteEnableFastPeer = false;
   }
 
-  List<int> removeRequest(int index, int begin, int length) {
+  List<int>? removeRequest(int index, int begin, int length) {
     var request = _removeRequestFromBuffer(index, begin, length);
     return request;
   }
@@ -312,7 +312,7 @@ abstract class Peer
   bool addRequest(int index, int begin, int length) {
     var maxCount = currentWindow;
     // maxCount = oldCount;
-    if (remoteReqq != null) maxCount = min(remoteReqq, maxCount);
+    if (remoteReqq != null) maxCount = min(remoteReqq!, maxCount);
     if (_requestBuffer.length >= maxCount) return false;
     _requestBuffer
         .add([index, begin, length, DateTime.now().microsecondsSinceEpoch, 0]);
@@ -357,8 +357,8 @@ abstract class Peer
       var lengthBuffer = Uint8List(4);
       List.copyRange(lengthBuffer, 0, _cacheBuffer, start, 4);
       var length = ByteData.view(lengthBuffer.buffer).getInt32(0, Endian.big);
-      List<Uint8List> piecesMessage;
-      List<Uint8List> haveMessages;
+      List<Uint8List>? piecesMessage;
+      List<Uint8List>? haveMessages;
       while (_cacheBuffer.length - start - 4 >= length) {
         if (length == 0) {
           Timer.run(() => _processMessage(null, null));
@@ -386,10 +386,10 @@ abstract class Peer
         length = ByteData.view(lengthBuffer.buffer).getInt32(0, Endian.big);
       }
       if (piecesMessage != null && piecesMessage.isNotEmpty) {
-        Timer.run(() => _processReceivePieces(piecesMessage));
+        Timer.run(() => _processReceivePieces(piecesMessage!));
       }
       if (haveMessages != null && haveMessages.isNotEmpty) {
-        Timer.run(() => _processHave(haveMessages));
+        Timer.run(() => _processHave(haveMessages!));
       }
       if (start != 0) _cacheBuffer = _cacheBuffer.sublist(start);
     }
@@ -410,7 +410,7 @@ abstract class Peer
     return true;
   }
 
-  void _processMessage(int id, Uint8List message) {
+  void _processMessage(int? id, Uint8List? message) {
     if (id == null) {
       _log('process keep alive $address');
       fireKeepAlive();
@@ -440,11 +440,11 @@ abstract class Peer
         //   return; // have message
         case ID_BITFIELD:
           // log('process bitfield from $address');
-          initRemoteBitfield(message);
+          initRemoteBitfield(message!);
           return; // bitfield message
         case ID_REQUEST:
           _log('process request from ${address}');
-          _processRemoteRequest(message);
+          _processRemoteRequest(message!);
           return; // request message
         // case ID_PIECE:
         //   _log('process pices : $address');
@@ -452,11 +452,11 @@ abstract class Peer
         //   return; // pices message
         case ID_CANCEL:
           _log('process cancel : $address');
-          _processCancel(message);
+          _processCancel(message!);
           return; // cancel message
         case ID_PORT:
           _log('process port : $address');
-          var port = ByteData.view(message.buffer).getUint16(0);
+          var port = ByteData.view(message!.buffer).getUint16(0);
           _processPortChange(port);
           return; // port message
         case OP_HAVE_ALL:
@@ -469,18 +469,18 @@ abstract class Peer
           return;
         case OP_SUGGEST_PIECE:
           _log('process suggest pieces : $address');
-          _processSuggestPiece(message);
+          _processSuggestPiece(message!);
           return;
         case OP_REJECT_REQUEST:
           _log('process reject request : $address');
-          _processRejectRequest(message);
+          _processRejectRequest(message!);
           return;
         case OP_ALLOW_FAST:
           _log('process allow fast : $address');
-          _processAllowFast(message);
+          _processAllowFast(message!);
           return;
         case ID_EXTENDED:
-          var extid = message[0];
+          var extid = message![0];
           message = message.sublist(1);
           processExtendMessage(extid, message);
           return;
@@ -492,7 +492,7 @@ abstract class Peer
   /// 从requestbuffer中将request删除
   ///
   /// 每当得到了piece回应或者request超时，都会调用此方法
-  List<int> _removeRequestFromBuffer(int index, int begin, int length) {
+  List<int>? _removeRequestFromBuffer(int index, int begin, int length) {
     var i = _findRequestIndexFromBuffer(index, begin, length);
     if (i != -1) {
       return _requestBuffer.removeAt(i);
@@ -518,7 +518,7 @@ abstract class Peer
     super.processExtendHandshake(data);
   }
 
-  void sendExtendMessage(String name, List<int> data) {
+  void sendExtendMessage(String name, Uint8List data) {
     var id = getExtendedEventId(name);
     if (id != null) {
       var message = <int>[];
@@ -723,7 +723,7 @@ abstract class Peer
     var extented = reseverd.elementAt(5);
     remoteEnableExtended = ((extented & 0x10) == 0x10);
     _sendExtendedHandshake();
-    fireHandshakeEvent(_remotePeerId, data);
+    fireHandshakeEvent(_remotePeerId!, data);
   }
 
   void _sendExtendedHandshake() async {
@@ -733,7 +733,7 @@ abstract class Peer
     }
   }
 
-  String _parseRemotePeerId(dynamic data) {
+  String? _parseRemotePeerId(dynamic data) {
     if (data is List<int>) {
       return String.fromCharCodes(data.sublist(48, 68));
     }
@@ -750,7 +750,7 @@ abstract class Peer
   /// Send message to remote
   ///
   /// this method will transform the [message] and id to be the peer protocol message bytes
-  void sendMessage(int id, [List<int> message]) {
+  void sendMessage(int? id, [List<int>? message]) {
     if (isDisposed) return;
     if (id == null) {
       // it's keep alive
@@ -758,7 +758,7 @@ abstract class Peer
       _startToCountdown();
       return;
     }
-    var m = _createByteMessage(id, message);
+    var m = _createByteMessage(id, message!);
     sendByteMessage(m);
     _startToCountdown();
   }
@@ -817,7 +817,7 @@ abstract class Peer
     d['m'] = localExtened;
     d['reqq'] = reqq;
     var m = encode(d);
-    message.addAll(m);
+    message.addAll(m as Iterable<int>);
     return message;
   }
 
@@ -845,7 +845,7 @@ abstract class Peer
         return false;
       }
     }
-    int requestIndex;
+    int? requestIndex;
     for (var i = 0; i < _remoteRequestBuffer.length; i++) {
       var r = _remoteRequestBuffer[i];
       if (r[0] == index && r[1] == begin) {
@@ -1174,7 +1174,7 @@ class TCPConnectException implements Exception {
 }
 
 class _TCPPeer extends Peer {
-  Socket _socket;
+  Socket? _socket;
   _TCPPeer(String localPeerId, CompactAddress address, List<int> infoHashBuffer,
       int piecesNum, this._socket,
       {bool enableExtend = true, bool enableFast = true})
@@ -1184,14 +1184,14 @@ class _TCPPeer extends Peer {
             localEnableFastPeer: enableFast);
 
   @override
-  Future<Stream> connectRemote(int timeout) async {
+  Future<Stream> connectRemote(int? timeout) async {
     timeout ??= 30;
     try {
       _socket ??= await Socket.connect(address.address, address.port,
           timeout: Duration(seconds: timeout));
-      return _socket;
+      return _socket!;
     } catch (e) {
-      throw TCPConnectException(e);
+      throw TCPConnectException(e as TCPConnectException);
     }
   }
 
@@ -1223,8 +1223,8 @@ class _TCPPeer extends Peer {
 /// actually , one UTPSocketClient should maintain several uTP socket(uTP peer),
 /// this class need to improve.
 class _UTPPeer extends Peer {
-  UTPSocketClient _client;
-  UTPSocket _socket;
+  UTPSocketClient? _client;
+  UTPSocket? _socket;
   _UTPPeer(String localPeerId, CompactAddress address, List<int> infoHashBuffer,
       int piecesNum, this._socket,
       {bool enableExtend = true, bool enableFast = true})
@@ -1235,10 +1235,10 @@ class _UTPPeer extends Peer {
 
   @override
   Future<Stream> connectRemote(int timeout) async {
-    if (_socket != null) return _socket;
+    if (_socket != null) return _socket!;
     _client ??= UTPSocketClient();
-    _socket = await _client.connect(address.address, address.port);
-    return _socket;
+    _socket = await _client!.connect(address.address, address.port);
+    return _socket!;
   }
 
   @override

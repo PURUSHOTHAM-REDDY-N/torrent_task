@@ -3,15 +3,15 @@ import 'dart:collection';
 import '../utils.dart';
 
 class Piece {
-  final String hashString;
+  final String? hashString;
 
-  final int byteLength;
+  final int? byteLength;
 
-  final int index;
+  final int? index;
 
   final Set<String> _avalidatePeers = <String>{};
 
-  Queue<int> _subPiecesQueue;
+  Queue<int>? _subPiecesQueue;
 
   final Set<int> _downloadedSubPieces = <int>{};
 
@@ -27,7 +27,7 @@ class Piece {
     if (requestLength > DEFAULT_REQUEST_LENGTH) {
       throw Exception('Request length should smaller than 16kb');
     }
-    _subPiecesCount = byteLength ~/ requestLength;
+    _subPiecesCount = byteLength! ~/ requestLength;
     if (_subPiecesCount * requestLength != byteLength) {
       _subPiecesCount++;
     }
@@ -40,11 +40,11 @@ class Piece {
     if (isCompleted) return false;
     return subPiecesCount !=
         _downloadedSubPieces.length +
-            _subPiecesQueue.length +
+            _subPiecesQueue!.length +
             _writtingSubPieces.length;
   }
 
-  Queue<int> get subPieceQueue => _subPiecesQueue;
+  Queue<int> get subPieceQueue => _subPiecesQueue!;
 
   int get subPiecesCount => _subPiecesCount;
 
@@ -59,14 +59,14 @@ class Piece {
 
   bool haveAvalidateSubPiece() {
     if (_subPiecesCount == 0) return false;
-    return _subPiecesQueue.isNotEmpty;
+    return _subPiecesQueue!.isNotEmpty;
   }
 
   int get avalidatePeersCount => _avalidatePeers.length;
 
   int get avalidateSubPieceCount {
     if (_subPiecesCount == 0) return 0;
-    return _subPiecesQueue.length;
+    return _subPiecesQueue!.length;
   }
 
   bool get isCompleted {
@@ -82,7 +82,7 @@ class Piece {
   /// 过说明设置成功，返回`true`
   bool subPieceDownloadComplete(int begin) {
     var subindex = begin ~/ DEFAULT_REQUEST_LENGTH;
-    _subPiecesQueue.remove(subindex);
+    _subPiecesQueue!.remove(subindex);
     return _writtingSubPieces.add(subindex);
   }
 
@@ -103,7 +103,7 @@ class Piece {
   ///
   ///当子Piece被弹出栈用于下载，或者子Piece已经下载完成，那么就视为该Piece已经不再包含该子Piece
   bool containsSubpiece(int subIndex) {
-    return subPieceQueue?.contains(subIndex);
+    return subPieceQueue!.contains(subIndex);
   }
 
   bool containsAvalidatePeer(String id) {
@@ -111,7 +111,7 @@ class Piece {
   }
 
   bool removeSubpiece(int subIndex) {
-    return subPieceQueue?.remove(subIndex);
+    return subPieceQueue!.remove(subIndex);
   }
 
   bool addAvalidatePeer(String id) {
@@ -126,7 +126,7 @@ class Piece {
     _avalidatePeers.clear();
   }
 
-  int popSubPiece() {
+  int? popSubPiece() {
     if (subPieceQueue.isNotEmpty) return subPieceQueue.removeFirst();
     return null;
   }
@@ -139,7 +139,7 @@ class Piece {
     return true;
   }
 
-  int popLastSubPiece() {
+  int? popLastSubPiece() {
     if (subPieceQueue.isNotEmpty) return subPieceQueue.removeLast();
     return null;
   }

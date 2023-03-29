@@ -1,8 +1,10 @@
+import 'dart:typed_data';
+
 import 'package:bencode_dart/bencode_dart.dart';
 
 mixin MetaDataMessager {}
 
-List<int> createRequestMessage(int piece) {
+Uint8List? createRequestMessage(int piece) {
   // {'msg_type': 0, 'piece': 0}
   var message = {};
   message['msg_type'] = 0;
@@ -10,7 +12,7 @@ List<int> createRequestMessage(int piece) {
   return encode(message);
 }
 
-List<int> createRejectMessage(int piece) {
+Uint8List? createRejectMessage(int piece) {
   // {'msg_type': 2, 'piece': 0}
   var message = {};
   message['msg_type'] = 2;
@@ -18,7 +20,7 @@ List<int> createRejectMessage(int piece) {
   return encode(message);
 }
 
-List<int> createDataMessage(int piece, List<int> bytes) {
+Uint8List? createDataMessage(int piece, List<int> bytes) {
   // {'msg_type': 1, 'piece': 0 , 'total_size' : xxxx}xxxx
   var message = {};
   message['msg_type'] = 1;
