@@ -11,21 +11,21 @@ environment:
 dependencies:
 #  path: ^1.7.0
   torrent_model:
-    git: https://github.com/xhns/torrent_model.git
+    path: ../torrent_model
   torrent_tracker:
-    git: https://github.com/xhns/torrent_tracker.git
+    path: ../torrent_tracker
   
   # torrent_tracker: 
   #   path: '../../dd/torrent_tracker'
 
   dht_dart:
-    git: https://github.com/xhns/dht.git
+    path: ../dht
   dartorrent_common:
-    git: https://github.com/xhns/dartorrent_common.git
+    path: ../dartorrent_common
   bencode_dart :
-    git: https://github.com/xhns/bencode_dart.git
+    path: ../bencode_dart
   utp:
-    git: https://github.com/xhns/utp.git
+    path: ../utp
   # utp:
   #   path: '../../dd/utp'
 

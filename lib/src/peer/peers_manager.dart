@@ -266,11 +266,11 @@ class PeersManager with Holepunch, PEX {
       Peer? peer;
       if (type == PeerType.TCP) {
         peer = Peer.newTCPPeer(_localPeerId, address, _metaInfo.infoHashBuffer!,
-            _metaInfo.pieces.length, socket!);
+            _metaInfo.pieces.length, socket);
       }
       if (type == PeerType.UTP) {
         peer = Peer.newUTPPeer(_localPeerId, address, _metaInfo.infoHashBuffer!,
-            _metaInfo.pieces.length, socket!);
+            _metaInfo.pieces.length, socket);
       }
       if (peer != null) _hookPeer(peer);
     }
@@ -448,9 +448,9 @@ class PeersManager with Holepunch, PEX {
     var peer = source as Peer;
 
     Piece? piece;
-    if (pieceIndex != -1) {
+    if (pieceIndex != -1 && _pieceProvider[pieceIndex] != null) {
       piece = _pieceProvider[pieceIndex];
-      if (!piece.haveAvalidateSubPiece()) {
+      if (!piece!.haveAvalidateSubPiece()) {
         piece = _pieceManager.selectPiece(peer.id!, peer.remoteCompletePieces,
             _pieceProvider, peer.remoteSuggestPieces);
       }

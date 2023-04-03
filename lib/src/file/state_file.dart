@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:torrent_model/torrent_model.dart';
+import 'package:path/path.dart' as pathPkg;
 import '../peer/bitfield.dart';
 
 const BITFIELD_TYPE = 'bitfield';
@@ -55,12 +56,15 @@ class StateFile {
   int get uploaded => _uploaded;
 
   Future<File> init(String directoryPath, Torrent metainfo) async {
+    /*
     var lastc = directoryPath.substring(directoryPath.length - 1);
     if (lastc != '\\' || lastc != '/') {
       directoryPath = directoryPath + '\\\\';
     }
 
     _bitfieldFile = File('${directoryPath}${metainfo.infoHash}.bt.state');
+     */
+    _bitfieldFile = File(pathPkg.join(directoryPath,'${metainfo.infoHash}.bt.state'));
     var exists = await _bitfieldFile!.exists();
     if (!exists) {
       _bitfieldFile = await _bitfieldFile!.create(recursive: true);

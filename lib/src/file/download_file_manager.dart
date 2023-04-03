@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:developer';
 
 import 'package:torrent_model/torrent_model.dart';
+import 'package:path/path.dart' as pathPkg;
 import '../peer/peer_base.dart';
 
 import 'download_file.dart';
@@ -46,10 +47,12 @@ class DownloadFileManager {
   }
 
   Future<DownloadFileManager> _init(String directory) async {
+    /*
     var lastc = directory.substring(directory.length - 1);
     if (lastc != '\\' || lastc != '/') {
       directory = directory + '\\';
     }
+     */
     _initFileMap(directory);
     return this;
   }
@@ -147,7 +150,7 @@ class DownloadFileManager {
   void _initFileMap(String directory) {
     for (var i = 0; i < metainfo.files.length; i++) {
       var file = metainfo.files[i];
-      var df = DownloadFile(directory + file.path, file.offset, file.length);
+      var df = DownloadFile(pathPkg.join(directory,file.path), file.offset, file.length);
       _files.add(df);
       var fs = df.start;
       var fe = df.end;

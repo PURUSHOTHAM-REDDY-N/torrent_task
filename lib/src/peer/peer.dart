@@ -193,7 +193,7 @@ abstract class Peer
   }
 
   factory Peer.newUTPPeer(String localPeerId, CompactAddress address,
-      List<int> infoHashBuffer, int piecesNum, Socket socket,
+      List<int> infoHashBuffer, int piecesNum, Socket? socket,
       {bool enableExtend = true, bool enableFast = true}) {
     return _UTPPeer(localPeerId, address, infoHashBuffer, piecesNum, socket as UTPSocket,
         enableExtend: enableExtend, enableFast: enableFast);
@@ -758,12 +758,12 @@ abstract class Peer
       _startToCountdown();
       return;
     }
-    var m = _createByteMessage(id, message!);
+    var m = _createByteMessage(id, message);
     sendByteMessage(m);
     _startToCountdown();
   }
 
-  List<int> _createByteMessage(int id, List<int> message) {
+  List<int> _createByteMessage(int id, List<int>? message) {
     var length = 0;
     if (message != null) length = message.length;
     length = length + 1;

@@ -133,8 +133,8 @@ class PieceManager implements PieceProvider {
   }
 
   @override
-  Piece operator [](index) {
-    return _pieces[index]!;
+  Piece? operator [](index) {
+    return _pieces[index];
   }
 
   // @override
