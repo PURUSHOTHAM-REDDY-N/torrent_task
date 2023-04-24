@@ -71,6 +71,9 @@ abstract class TorrentTask {
   /// Resume task
   void resume();
 
+  /// Delete downloaded files
+  Future<void> delete();
+
   void requestPeersFromDHT();
 
   bool onTaskComplete(void Function() handler);
@@ -442,6 +445,8 @@ class _TorrentTask implements TorrentTask, AnnounceOptionsProvider {
   @override
   int? get downloaded => _fileManager?.downloaded;
 
+
+
   @override
   double get progress {
     var d = downloaded;
@@ -525,5 +530,12 @@ class _TorrentTask implements TorrentTask, AnnounceOptionsProvider {
   void requestPeersFromDHT() {
     if (_metaInfo == null) return;
     _dht?.requestPeers(String.fromCharCodes(_metaInfo!.infoHashBuffer as Iterable<int>));
+  }
+
+  @override
+  Future<void> delete() async {
+    log('deleting torrent file fileManager= $_fileManager', name: runtimeType.toString());
+    await _fileManager?.delete();
+    return;
   }
 }

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:developer';
 
 import 'package:torrent_model/torrent_model.dart';
@@ -32,6 +33,8 @@ class DownloadFileManager {
   final List<void Function(String path)> _fileCompleteHandles = [];
 
   final StateFile _stateFile;
+
+  String? _parentDir;
 
   /// TODO
   /// - 没有建立文件读取缓存
@@ -148,6 +151,7 @@ class DownloadFileManager {
   }
 
   void _initFileMap(String directory) {
+    _parentDir = directory;
     for (var i = 0; i < metainfo.files.length; i++) {
       var file = metainfo.files[i];
       var df = DownloadFile(pathPkg.join(directory,file.path), file.offset, file.length);
@@ -297,10 +301,30 @@ class DownloadFileManager {
 
   Future delete() async {
     await _stateFile?.delete();
+    var dirs = <String>{};
     for (var i = 0; i < _files.length; i++) {
       var file = _files.elementAt(i);
+      log('deleting ${file.filePath}', name: runtimeType.toString());
       await file.delete();
+      var fsFile =  File(file.filePath);
+      if(fsFile.existsSync()) {
+        fsFile.deleteSync();
+      }
+      var tmpPath = file.filePath;
+      do{
+        tmpPath = pathPkg.dirname(tmpPath);
+      }while(pathPkg.dirname(tmpPath) != _parentDir && pathPkg.dirname(tmpPath) != '.' && pathPkg.dirname(tmpPath) != '/');
+
+      dirs.add(tmpPath);
     }
+
+    for(var dir in dirs){
+      if(dir != '.' && dir != '/') {
+        log('deleting parent dir $dir', name: runtimeType.toString());
+        Directory(dir).deleteSync(recursive: true);
+      }
+    }
+    //remove empty dir if exists
     _clean();
   }
 }
