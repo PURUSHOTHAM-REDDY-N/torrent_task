@@ -518,7 +518,7 @@ abstract class Peer
     super.processExtendHandshake(data);
   }
 
-  void sendExtendMessage(String name, Uint8List data) {
+  void sendExtendMessage(String name, List<int> data) {
     var id = getExtendedEventId(name);
     if (id != null) {
       var message = <int>[];

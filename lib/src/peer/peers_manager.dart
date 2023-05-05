@@ -711,7 +711,7 @@ class PeersManager with Holepunch, PEX {
         options['reachable'] == null) {
       var peer = source as Peer;
       var message = getRendezvousMessage(address);
-      peer.sendExtendMessage('ut_holepunch', message as Uint8List);
+      peer.sendExtendMessage('ut_holepunch', message as List<int>);
       return;
     }
     addNewPeerAddress(address);
