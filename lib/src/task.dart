@@ -61,7 +61,7 @@ abstract class TorrentTask {
   Future start();
 
   /// Stop this task
-  Future stop();
+  Future stop([bool force = false]);
 
   bool get isPaused;
 
