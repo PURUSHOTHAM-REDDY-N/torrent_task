@@ -12,7 +12,7 @@ dependencies:
 #  path: ^1.7.0
   torrent_model:
     git:
-      url: https://github.com/xhns/torrent_task.git
+      url: https://github.com/PURUSHOTHAM-REDDY-N/torrent_model.git
       ref: master 
   torrent_tracker:
     git:
