@@ -11,21 +11,33 @@ environment:
 dependencies:
 #  path: ^1.7.0
   torrent_model:
-    path: ../torrent_model
+    git:
+      url: https://github.com/xhns/torrent_task.git
+      ref: master 
   torrent_tracker:
-    path: ../torrent_tracker
+    git:
+      url: https://github.com/PURUSHOTHAM-REDDY-N/torrent_tracker.git
+      ref: master 
   
   # torrent_tracker: 
   #   path: '../../dd/torrent_tracker'
 
   dht_dart:
-    path: ../dht
+    git:
+      url: https://github.com/PURUSHOTHAM-REDDY-N/dht_dart.git
+      ref: main 
   dartorrent_common:
-    path: ../dartorrent_common
+    git:
+      url: https://github.com/PURUSHOTHAM-REDDY-N/dartorrent_common.git
+      ref: main 
   bencode_dart :
-    path: ../bencode_dart
+    git:
+      url: https://github.com/PURUSHOTHAM-REDDY-N/bencode_dart.git
+      ref: master 
   utp:
-    path: ../utp
+    git:
+      url: https://github.com/PURUSHOTHAM-REDDY-N/utp.git
+      ref: main 
   # utp:
   #   path: '../../dd/utp'
 
