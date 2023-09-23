@@ -136,11 +136,11 @@ class MetadataDownloader
       Peer? peer;
       if (type == PeerType.TCP) {
         peer =
-            Peer.newTCPPeer(_localPeerId!, address, _infoHashBuffer!, 0, socket!);
+            Peer.newTCPPeer(_localPeerId!, address, _infoHashBuffer!, 0, socket!,source);
       }
       if (type == PeerType.UTP) {
         peer =
-            Peer.newUTPPeer(_localPeerId!, address, _infoHashBuffer!, 0, socket!);
+            Peer.newUTPPeer(_localPeerId!, address, _infoHashBuffer!, 0, socket!,source);
       }
       if (peer != null) _hookPeer(peer);
     }
