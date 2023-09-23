@@ -73,9 +73,6 @@ typedef BoolHandle = void Function(Peer peer, bool value);
 
 typedef SingleIntHandle = void Function(Peer peer, int value);
 
-enum PeerSource { tracker, dht, pex, lsd, incoming, manual, holepunch }
-
-
 abstract class Peer
     with
         PeerEventDispatcher,
@@ -170,9 +167,6 @@ abstract class Peer
 
   final PeerType type;
 
-  final PeerSource source;
-
-
   int reqq;
 
   int? remoteReqq;
@@ -192,14 +186,14 @@ abstract class Peer
   }
 
   factory Peer.newTCPPeer(String localPeerId, CompactAddress address,
-      List<int> infoHashBuffer, int piecesNum, Socket? socket,PeerSource source,
+      List<int> infoHashBuffer, int piecesNum, Socket? socket,
       {bool enableExtend = true, bool enableFast = true}) {
     return _TCPPeer(localPeerId, address, infoHashBuffer, piecesNum, socket,
         enableExtend: enableExtend, enableFast: enableFast);
   }
 
   factory Peer.newUTPPeer(String localPeerId, CompactAddress address,
-      List<int> infoHashBuffer, int piecesNum, Socket? socket,PeerSource source,
+      List<int> infoHashBuffer, int piecesNum, Socket? socket,
       {bool enableExtend = true, bool enableFast = true}) {
     return _UTPPeer(localPeerId, address, infoHashBuffer, piecesNum, socket as UTPSocket?,
         enableExtend: enableExtend, enableFast: enableFast);
@@ -1182,7 +1176,7 @@ class TCPConnectException implements Exception {
 class _TCPPeer extends Peer {
   Socket? _socket;
   _TCPPeer(String localPeerId, CompactAddress address, List<int> infoHashBuffer,
-      int piecesNum, this._socket,PeerSource source,
+      int piecesNum, this._socket,
       {bool enableExtend = true, bool enableFast = true})
       : super(localPeerId, address, infoHashBuffer, piecesNum,
             type: PeerType.TCP,
@@ -1232,7 +1226,7 @@ class _UTPPeer extends Peer {
   UTPSocketClient? _client;
   UTPSocket? _socket;
   _UTPPeer(String localPeerId, CompactAddress address, List<int> infoHashBuffer,
-      int piecesNum, this._socket,PeerSource source,
+      int piecesNum, this._socket,
       {bool enableExtend = true, bool enableFast = true})
       : super(localPeerId, address, infoHashBuffer, piecesNum,
             type: PeerType.UTP,
