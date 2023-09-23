@@ -112,7 +112,7 @@ class MetadataDownloader
 
   void _processDHTPeer(CompactAddress peer, String infoHash) {
     if (infoHash == _infoHashString) {
-      addNewPeerAddress(peer,PeerSource.dht);
+      addNewPeerAddress(peer);
     }
   }
 
@@ -121,7 +121,7 @@ class MetadataDownloader
   ///
   /// Usually [socket] is null , unless this peer was incoming connection, but
   /// this type peer was managed by [TorrentTask] , user don't need to know that.
-  void addNewPeerAddress(CompactAddress? address,PeerSource source,
+  void addNewPeerAddress(CompactAddress? address,
       [PeerType type = PeerType.TCP, Socket? socket]) {
     if (!_running) return;
     if (address == null) return;
@@ -136,11 +136,11 @@ class MetadataDownloader
       Peer? peer;
       if (type == PeerType.TCP) {
         peer =
-            Peer.newTCPPeer(_localPeerId!, address, _infoHashBuffer!, 0, socket!,source);
+            Peer.newTCPPeer(_localPeerId!, address, _infoHashBuffer!, 0, socket!);
       }
       if (type == PeerType.UTP) {
         peer =
-            Peer.newUTPPeer(_localPeerId!, address, _infoHashBuffer!, 0, socket!,source);
+            Peer.newUTPPeer(_localPeerId!, address, _infoHashBuffer!, 0, socket!);
       }
       if (peer != null) _hookPeer(peer);
     }
@@ -332,12 +332,12 @@ class MetadataDownloader
       peer.sendExtendMessage('ut_holepunch', message as Uint8List);
       return;
     }
-    addNewPeerAddress(address,PeerSource.pex);
+    addNewPeerAddress(address);
   }
 
   @override
   void holePunchConnect(CompactAddress ip) {
-    addNewPeerAddress(ip,PeerSource.holepunch, PeerType.UTP);
+    addNewPeerAddress(ip, PeerType.UTP);
   }
 
   @override
